@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>医疗影像平台</title>
+<link rel="icon" type="image/x-icon" th:href="@{~/static/favicon.ico}" />
+<script th:src="@{~/static/bootstrap/js/jquery-3.4.1.min.js}"></script>
+<link th:href="@{~/static/bootstrap/css/bootstrap.css}" rel="stylesheet"/>
+<script th:src="@{~/static/bootstrap/js/bootstrap.js}"></script>
+<link th:href="@{~/static/bootstrap/css/bootstrap.css}" rel="stylesheet"/>
+<link th:href="@{~/static/layui/css/layui.css}" rel="stylesheet"/>
+<!--<script th:src="@{~/static/layui/layui.all.js}"></script>-->
+<script th:src="@{~/static/layer/layer.js}"></script>
+
+<style>
+    body {
+        background: url("static/images/background.jpg");
+    }
+
+    #left {
+        position: absolute;
+        width: 100%;
+        /*background: #fff;*/
+        height: 280px;
+        top: 25%;
+        padding-top: 40px;
+        padding-left: 100px;
+    }
+
+    #right {
+        top: 22%;
+        position: absolute;
+        width: 400px;
+        background: #fff;
+        height: 400px;
+        border-radius: 6px;
+        left: 60%;
+        padding-top: 20px;
+        border: 1px solid #eee;
+    }
+
+</style>
+</head>
+<body>
+<div id="left">
+    <!--    <div style="position: absolute; width: 100%;background: #fff;height: 280px;top: 25%;padding-top: 40px;    padding-left: 100px;">-->
+    <!--        <img alt="" src="static/images/picture.png" style=" width: 30%;height: 180px;float: left;">-->
+    <!--    </div>-->
+</div>
+<div id="right" class="container">
+    <div class="page-header">
+        <h1 class="text-center">医疗影像平台</h1>
+    </div>
+    <div class="container" style="width: 90%; margin: auto;">
+        <div class="tab-pane fade in active" id="userLogin">
+            <div class="row">
+                <div class="form-inline">
+                    <label style="width: 60px;text-align: right">账号</label>
+                    <input name="account" class="form-control" id="account" placeholder="请输入您的账号">
+                </div>
+            </div>
+            <br>
+            <div class="row">
+                <div class="form-inline">
+                    <label style="width: 60px;text-align: right">密码:</label>
+                    <input name="password" type="password" class="form-control" id="password"
+                           placeholder="请输入您的密码"/>
+                </div>
+            </div>
+            <br>
+            <div class="row">
+                <div class="form-inline">
+                    <label style="width: 60px;text-align: right">验证码:</label>
+                    <input type="text" id="code" name="code" class="form-control" style="width: 30%;"/>
+                    <img id="generateCode" th:src="@{/getCaptchaCode?type=char&d='+new Date()*1}" width="80px"
+                         height="30px"
+                         onclick="this.src='/getCaptchaCode?type=char&d='+new Date()*1">
+                </div>
+            </div>
+            <br>
+            <div class="submit">
+                <button onclick="login()" class="btn btn-primary btn-lg btn-block">登录</button>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+
+<script type="text/javascript">
+    function login() {
+        console.log('start')
+        var account = $("#account").val();
+        var password = $("#password").val();
+        var code = $("#code").val();
+        if (account == null || account == "") {
+            layer.msg('账号不能为空')
+            $("#account").focus();
+        } else if (password == null || password == "") {
+            layer.msg('密码不能为空')
+            $("#password").focus();
+        } else if (code == null || code == "" || code.length != 4) {
+            layer.msg('验证码为4位字母或数字')
+            $("#code").focus();
+        } else {
+            $.ajax({
+                type: 'post',
+                url: 'login',
+                async: false,
+                data: {
+                    'userId': account,
+                    'userPassword': password,
+                    'code': code
+                },
+                success: function (AjaxResult) {
+
+                    if (AjaxResult.code == 200) {
+                        layer.msg(AjaxResult.msg);
+                        window.location = "/index";
+
+                    } else if (AjaxResult.code == 500) {
+                        layer.msg(AjaxResult.msg)
+                        $("#generateCode").click();//更改验证码
+                    }
+                },
+                error: function () {
+                    alert("error");
+                }
+            });
+        }
+        return true;
+    }
+</script>
+
+</html>

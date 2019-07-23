@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.pollix.at/thymeleaf/shiro">
+<head th:replace="admin/common/html/head :: head(~{::title},~{::link},~{::style})">
+
+    <title th:text=${title}></title>
+    <!-- 这儿引用单独的css link -->
+    <!-- Ladda for Bootstrap 3按钮加载进度插件 -->
+    <link rel="stylesheet" th:href="@{/static/admin/assets/js/button/ladda/ladda.min.css}">
+    <!-- bootstrap-table表单样式 -->
+    <link th:href="@{/static/admin/assets/js/bootstrap/css/bootstrap-table/bootstrap-table.min.css}" rel="stylesheet"/>
+
+    <style type="text/css">
+        /**
+        *这里写单独的css样式
+        */
+        .select-list ul li {
+            list-style-type: none;
+            float: left;
+        }
+    </style>
+
+</head>
+
+<body>
+<!-- ###############################代码编写出############################### -->
+<!-- 右边内容 -->
+<div class="wrap-fluid">
+    <div class="container-fluid paper-wrap bevel tlbr">
+        <!-- 内容 -->
+        <!--标题 通用-->
+        <div th:replace="admin/common/html/title :: title(${title},${parenttitle},${isMsg},${msgHTML})">
+        </div>
+        <!-- 结束标题 通用-->
+        <div class="content-wrap">
+            <!-- 结束内容 -->
+            <div class="row">
+                <div class="col-sm-12">
+                    <!-- 空白页开始-->
+                    <div class="nest" id="Blank_PageClose">
+<!--                        <div class="title-alt">
+                            <h6>表单</h6>
+                            <div class="titleClose">
+                                <a class="gone" href="#Blank_PageClose">
+                                    <span class="entypo-cancel"></span>
+                                </a>
+                            </div>
+                            <div class="titleToggle">
+                                <a class="nav-toggle-alt" href="#Blank_Page_Content">
+                                    <span class="entypo-up-open"></span>
+                                </a>
+                            </div>
+                        </div>-->
+
+                        <div class="body-nest" id="Blank_Page_Content">
+                            <!-- 工具条 -->
+                            <div class="btn-group hidden-xs" id="exampleTableEventsToolbar" role="group">
+                                <button onclick="$.operate.add()" type="button" class="btn btn-primary">
+                                    <span class="entypo-plus-squared"></span>&nbsp;&nbsp;新增
+                                </button>
+                                <button onclick="$.operate.batRemove()" type="button" class="btn btn-info">
+                                    <span class="entypo-trash"></span>&nbsp;&nbsp;删除
+                                </button>
+
+
+                            </div>
+                            <!-- 工具条 end-->
+                            <table id="dataTable" class="table-striped footable-res footable metro-blue"
+                                   data-page-size="6">
+
+
+                            </table>
+
+
+                        </div>
+                    </div>
+                </div>
+                <!-- 空白页结束 -->
+            </div>
+            <!-- 结束内容 -->
+        </div>
+    </div>
+</div>
+<!-- 结束右边内容 -->
+<!-- ###############################代码编写出############################### -->
+<!-- 通用js -->
+<div th:include="admin/common/html/js :: onload_js">
+
+</div>
+<!-- bootstarp 表格 -->
+<script th:src="@{/static/admin/assets/js/bootstrap/js/bootstrap-table/bootstrap-table.min.js}"
+        type="text/javascript"></script>
+<script th:src="@{/static/admin/assets/js/bootstrap/js/bootstrap-table/locale/bootstrap-table-zh-CN.min.js}"
+        type="text/javascript"></script>
+<script th:src="@{/static/admin/assets/js/bootstrap/js/base_list.js}" type="text/javascript"></script>
+<!-- 导出 -->
+<script th:src="@{/static/admin/assets/js/bootstrap/extensions/export/bootstrap-table-export.js}"
+        type="text/javascript"></script>
+<script th:src="@{/static/admin/assets/js/bootstrap/extensions/export/tableExport.js}" type="text/javascript"></script>
+
+<!-- 弹窗 -->
+<script th:src="@{/static/admin/assets/js/layer/layer.js}" type="text/javascript"></script>
+<!-- 遮罩层 -->
+<script th:src="@{/static/admin/assets/js/blockUI/jquery.blockUI.js}" type="text/javascript"></script>
+<!-- 右边高度控制 -->
+<script type="text/javascript" th:src="@{/static/admin/assets/js/right_hight.js}"></script>
+
+<script type="text/javascript">
+    /*    <!--
+        jquery
+        export
+        表格导出插件 -->*/
+
+    <!-- 导出 -->
+    var dataUrl = window.rootPath + "/project/list";
+    var removeUrl = window.rootPath + "/project/remove";
+    var createUrl = window.rootPath + "/project/add";
+    var updateUrl = window.rootPath + "/project/edit/{id}";
+    var exportUrl = window.rootPath + "/admin/userManage/export";
+    var options = {
+        dataUrl: dataUrl,
+        createUrl: createUrl,
+        updateUrl: updateUrl,
+        removeUrl: removeUrl,
+        exportUrl: exportUrl,
+        sortName: "projectId",
+        modalName: "项目号",
+        search: false,
+        dataColumns: [
+            {
+                checkbox: true
+            },
+            {
+                field: 'projectId',
+                title: '项目号'
+            },
+            {
+                field: 'projectName',
+                title: '项目名'
+            }, {
+                field: 'createTime',
+                title: '创建时间'
+            }, {
+                field: 'createUserId',
+                title: '创建人帐号'
+            }, {
+                title: '操作',
+                formatter: function (value, row, index) {
+                    var id = row.id;
+                    var actions = [];
+                    var path="/projectUser/list/"+row.projectId;
+                    var fileLogPath="/fileLog/list/"+row.projectId;
+                    var fileDownloadPath="/fileDownload/downloadList/"+row.projectId;
+                    actions.push('<a class="btn btn-success btn-xs"  href="#" onclick="$.operate.edit(\'' + row.projectId + '\')"><i class="fa fa-edit"></i>编辑</a> ');
+                    actions.push('<a class="btn btn-danger btn-xs" href="#" onclick="$.operate.remove(\'' + row.projectId + '\')"><i class="fa fa-remove"></i>删除</a>');
+                    actions.push('<a class="btn btn-info btn-xs" href="'+path+'"><i class="fa fa-info"></i>具体成员</a>');
+                    actions.push('<a class="btn btn-success btn-xs" href="'+fileLogPath+'"><i class="fa fa-info"></i>项目文件</a>');
+                    actions.push('<a class="btn btn-info btn-xs" href="'+fileDownloadPath+'"><i class="fa fa-info"></i>病人影像文件下载</a>');
+                    return actions.join('');
+
+                    //return '<a class="btn btn-xs btn-danger" onclick="delPermission(' + "'" + id + "'" + ')"><i class="fa fa-remove"></i>删除</a>';
+                }
+            }]
+    };
+    $(function () {
+        var oTab = $.table.oTableInit(options);
+        oTab.Init();
+    })
+</script>
+
+
+<script type="text/javascript">
+    var editPwdUrl = window.rootPath + "/project//{id}";
+
+    function updatePwd() {
+        var rows = $.common.isEmpty($.table._option.userId) ? $.table.selectFirstColumns() : $.table.selectColumns($.table._option.userId);
+        if (rows.length == 0) {
+            $.modal.alertWarning("请至少选择一条记录");
+            return
+        } else if (rows.length > 1) {
+            $.modal.alertWarning("请选择一条记录");
+            return
+        }
+
+
+        var url = editPwdUrl.replace("{id}", rows.join());
+        var data = {
+            "id": rows.join()
+        };
+        $.modal.open("修改项目", url);
+    }
+
+</script>
+
+
+</body>
+
+
+</html>

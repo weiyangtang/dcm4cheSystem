@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.pollix.at/thymeleaf/shiro">
+<head th:replace="admin/common/html/head :: head(~{::title},~{::link},~{::style})">
+
+<title th:text=${title}></title>
+<!-- 这儿引用单独的css link -->
+<link rel="stylesheet" th:href="@{/static/admin/assets/js/button/ladda/ladda.min.css}">
+<style type="text/css">
+/**
+*这里写单独的css样式
+*/
+
+#mainFrame{
+height: calc(100vh - 139px);overflow-x: hidden;
+}
+</style>
+
+</head>
+
+<body id="body">
+
+<!-- 顶部通用-->
+<div th:replace="admin/common/html/topMenu :: topMenu(${isribbon})">
+</div>
+<!-- 结束顶部通用 -->
+   
+<!-- 左边菜单栏通用 -->
+<div th:replace="admin/common/html/leftMenu :: leftMenu">
+</div>
+<!-- 结束左边菜单栏通用 -->
+
+<!-- ###############################代码编写出############################### -->
+
+<!-- 右边内容 -->
+<div class="wrap-fluid">
+     <div style="background-color: aliceblue;">
+       <iframe  width="100%"   id="mainFrame" name="mainFrame" th:src="@{'/main'}" frameborder="0" marginheight="0" marginwidth="0" border="false"  ></iframe>
+
+     </div>
+      
+     <!-- 页脚 通用-->
+     <div th:replace="admin/common/html/footer :: footer">
+     </div>
+     <!-- 结束页脚通用 -->
+</div>
+<!-- 结束右边内容 -->
+
+<!-- ###############################代码编写出############################### -->
+
+<!-- 右侧隐藏滑块内容 -->
+<div th:include="admin/common/html/rightHide :: rightHide">
+</div>
+   <!-- END 右侧隐藏滑块内容-->
+
+<!-- 通用js -->
+<div th:include="admin/common/html/js :: onload_js"> 
+</div> 
+<script type="text/javascript" src="/static/admin/assets/js/toggle_close.js"></script>
+<script type="text/javascript" th:src="@{/static/admin/assets/js/main.js}"></script>
+</body>
+
+
+</html>

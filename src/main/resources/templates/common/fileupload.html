@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>医疗成像系统</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/static/bootstrap/css/bootstrap.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/static/bootstrap-table/bootstrap-table.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/static/bootstrap/css/bootstrap-theme.css}">
+    <!--文件上传css-->
+    <link rel="stylesheet" type="text/css" th:href="@{/static/bootstrap-fileinput/css/fileinput.css}">
+</head>
+<body>
+<div class="container">
+    <h1>医疗影像上传</h1>
+    <div class="rows">
+        <div class="form-inline">
+            <label>选择项目组:</label>
+            <select id="project" name="project"
+                    class="form-control" onchange="changeProjectId()">
+                <option>常州医疗</option>
+                <option>医疗工程</option>
+            </select>
+            <label id="project_id" style="padding-left: 10px">项目编号:</label>
+        </div>
+    </div>
+    <br>
+    <H4>医疗影像文件上传</H4>
+    <div class="form-inline">
+        <label>选择上传形式:</label>
+        <select id="dcmfileoption" class="form-control" onchange="changeUploadMethod(1)">
+            <option>文件夹</option>
+            <option>文件</option>
+        </select>
+    </div>
+    <!--文件上传-->
+    <form id="dcmfileupload" enctype="multipart/form-data" style="display: none">
+        <label class="control-label">最大允许上传100M的多个dcm文件</label>
+        <input id="dcmfile" name="file" type="file" multiple class="file" data-show-upload="false" accept=".dcm"
+               data-show-preview="false" placeholder="dcm文件上传,文件形式">
+        <button type="button" class="btn btn-primary" onclick="upload('dcmfile','/dcmfileUpload')">上传文件</button>
+    </form>
+
+    <!--文件夹上传-->
+    <form id="dcmfolderupload" enctype="multipart/form-data">
+        <label class="control-label">最大允许上传100个dcm文件</label>
+        <input id="dcmfolder" name="file" type="file" multiple webkitdirectory class="file" data-show-upload="false"
+               data-show-preview="false" placeholder="dcm文件上传,文件夹形式">
+        <button type="button" class="btn btn-primary" onclick="upload('dcmfolder','/dcmfileUpload')">上传文件</button>
+    </form>
+    <div id="notice" style="display: none;color: red;font-size: 15px">文件上传中,请稍等</div>
+    <br>
+    <br>
+    <H4>其他文件上传(标注文件等)</H4>
+    <div class="form-inline">
+        <label>选择上传形式:</label>
+        <select id="otherfileoption" class="form-control" onchange="changeUploadMethod(2)">
+            <option>文件夹</option>
+            <option>文件</option>
+        </select>
+    </div>
+
+    <!--其他文件上传-->
+    <form id="otherfileupload" enctype="multipart/form-data" style="display: none">
+        <label class="control-label">最大允许上传100M的文件</label>
+        <input id="otherfile" name="file" type="file" multiple class="file" data-show-upload="false"
+               placeholder="其他文件上传,文件形式"
+               data-show-preview="false">
+        <button type="button" class="btn btn-primary" onclick="upload('otherfile','/otherfileUpload')">上传文件</button>
+    </form>
+
+
+    <!--其他文件夹上传-->
+    <form id="otherfolderupload" enctype="multipart/form-data">
+        <label class="control-label">最大允许上传100M的文件</label>
+        <input id="otherfolder" name="file" type="file" multiple webkitdirectory class="file" data-show-upload="false"
+               data-show-preview="false" placeholder="其他文件上传,文件夹形式">
+        <button type="button" class="btn btn-primary" onclick="upload('otherfolder','/otherfileUpload')">上传文件</button>
+    </form>
+    <div id="othernotice" style="display: none;color: red;font-size: 15px">文件上传中,请稍等</div>
+</div>
+
+</body>
+<!--bootstrap table-->
+<script type="text/javascript" th:src="@{/static/jquery-easyui-1.7.0/jquery.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/bootstrap/js/bootstrap.js}"></script>
+<script type="text/javascript" th:src="@{/static/bootstrap-table/bootstrap-table.js}"></script>
+<script type="text/javascript" th:src="@{/static/bootstrap-table/bootstrap-table-zh-CN.js}"></script>
+
+<!--表格导出-->
+<script type="text/javascript" th:src="@{/static/bootstrap-table/tableExport.js}"></script>
+<script type="text/javascript" th:src="@{/static/bootstrap-table/bootstrap-table-export.js}"></script>
+
+<!--文件上传-->
+
+<script type="text/javascript" th:src="@{/static/bootstrap-fileinput/js/fileinput.js}"></script>
+<script type="text/javascript" th:src="@{/static/bootstrap-fileinput/js/locales/zh.js}"></script>
+
+<!--layer弹窗-->
+<script type="text/javascript" th:src="@{/static/layer/layer.js}"></script>
+<script type="text/javascript" src="/static/admin/assets/js/toggle_close.js"></script>
+<!-- 右边高度控制 -->
+<script type="text/javascript" th:src="@{/static/admin/assets/js/right_hight.js}"></script>
+<script>
+    var projectList;
+    var files = [];
+    $(document).ready(function () {
+        findByaccount();
+        // $("folder").change(function () {
+        //     files = this.files;
+        // });
+    })
+
+    function changeUploadMethod(index) {
+        if (index == 1) {
+            meathodindex = $("#dcmfileoption").get(0).selectedIndex;
+            if (meathodindex == 0) {
+                $("#dcmfileupload").css("display", "none");
+                $("#dcmfolderupload").css("display", "block");
+            } else {
+                $("#dcmfileupload").css("display", "block");
+                $("#dcmfolderupload").css("display", "none");
+            }
+        } else {
+            meathodindex = $("#otherfileoption").get(0).selectedIndex;
+            if (meathodindex == 0) {
+                $("#otherfileupload").css("display", "none");
+                $("#otherfolderupload").css("display", "block");
+            } else {
+                $("#otherfileupload").css("display", "block");
+                $("#otherfolderupload").css("display", "none");
+            }
+        }
+    }
+
+
+    function upload(inputname, url) {
+        var len=$("#project")[0].options.length;
+        if (len<1){
+            layer.msg("您未参与任何项目,无法上传文件", {time: 10 * 1000});
+            return;
+        }
+        var formData = new FormData();
+        var filesize;
+        var files = $("#" + inputname)[0].files;
+        for (var i in files) {
+            formData.append("file", files[i])
+            filesize = filesize + files[i].size;
+        }
+        if (files.length > 300) {
+            layer.msg("文件个数不得超过300个", {time: 10 * 1000});
+            return;
+        } else if (filesize > 200 * 1024) {
+            layer.msg("文件大小不得超过200MB", {time: 10 * 1000});
+            return;
+        }
+        // var formData = new FormData($('#fileupload')[0]);
+        index = $("#project").get(0).selectedIndex;
+        formData.append('pid', projectList[index].projectId);
+        var msg;
+        $.ajax({
+            type: 'post',
+            url: url,
+            timeout: 600000,//超时时间600s
+            async: true,
+            data: formData,
+            cache: false,
+            contentType: false,
+            processData: false,
+            beforeSend: function () {
+                // Handle the beforeSend event
+                console.log("文件上传中");
+                if (inputname.trim() == "dcmfile" || inputname.trim() == "dcmfolder") {
+                    $("#notice").html("文件正在上传中,请稍等....");
+                    $("#notice").css("display", "block");
+                } else {
+                    $("#othernotice").html("文件正在上传中,请稍等....");
+                    $("#othernotice").css("display", "block");
+                }
+                msg = layer.msg('正在上传文件中,请稍等...', {
+                    icon: 16,
+                    shade: [0.5, '#f5f5f5'],
+                    scrollbar: false,
+                    offset: '0px',
+                    time: 600000
+                });
+                // layer.msg('上传中,请稍等', {time: 10 * 1000})
+                // console.log("文件2");
+            },
+            complete: function () {
+                // Handle the complete event
+                // $("#notice").html("文件上传成功");
+                // $("#notice").css("display", "block");
+                layer.close(msg);
+            },
+            success: function (result) {
+                if (inputname.trim() == "dcmfile" || inputname.trim() == "dcmfolder") {
+                    $("#notice").html("文件上传成功");
+                    $("#notice").css("display", "block");
+                } else {
+                    $("#othernotice").html("文件上传成功");
+                    $("#othernotice").css("display", "block");
+                }
+                // layer.msg("上传成功");
+                layer.msg('上传成功', {time: 10 * 1000})
+                // history.go(0);//清除浏览器缓存,刷新,请求后台
+            },
+            error: function () {
+                // $("#notice").html("文件上传失败,请检查网络情况");
+                $("#notice").css("display", "none");
+                $("#othernotice").css("display", "none");
+                //alert('ERROR!');
+                layer.msg('文件上传失败,请检查网络情况', {time: 10 * 1000})
+            }
+        });
+    }
+
+
+    function findByaccount() {
+        $.ajax({
+            type: 'post',
+            url: '/project/findByaccount',
+            async: false,
+            data: {},
+            success: function (result) {
+                projectList = result;
+                var project = result;
+                $("#project").empty();
+                for (var i in project)
+                    $("#project").append(
+                        "<option value=" + i + ">"
+                        + project[i].projectName
+                        + "</option>");
+                index = $("#project").get(0).selectedIndex;
+                $("#project_id").html('项目编号：' + projectList[index].projectId)
+                $("#pid").val(projectList[index].projectId);
+
+            },
+            error: function () {
+                alert("error");
+            }
+        });
+    }
+
+    function changeProjectId() {
+        index = $("#project").get(0).selectedIndex;
+        $("#project_id").html('项目编号：' + projectList[index].projectId)
+        $("#pid").val(projectList[index].projectId);
+    }
+
+
+</script>
+
+</html>
